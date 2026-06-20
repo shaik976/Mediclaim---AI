@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediClaim AI — Claim Validator</title>
+    <!-- Google Fonts: Inter and Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0A1628;
+            --bg-deep: #050B14;
+            --bg-light: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --card-dark: #12213A;
+            --primary-gradient: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            --accent-blue: #3B82F6;
+            --accent-sky: #0EA5E9;
+            --risk-low: #16A34A;
+            --risk-medium: #D97706;
+            --risk-high: #DC2626;
+            --text-main: #1F2937;
+            --text-muted: #4B5563;
+            --text-light: #F3F4F6;
+            --text-white: #FFFFFF;
+            --border-color: #E5E7EB;
+            --border-dark: #1E293B;
+            --glow-blue: 0 0 20px rgba(59, 130, 246, 0.25);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand span {
+            background: linear-gradient(120deg, #3B82F6, #38BDF8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .navbar-center {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #94A3B8;
+            display: block;
+        }
+
+        .navbar-badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #93C5FD;
+            padding: 0.4rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--glow-blue);
+        }
+
+        .navbar-badge::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #38BDF8;
+            box-shadow: 0 0 8px #38BDF8;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            100% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Container & Grid */
+        .main-container {
+            flex: 1;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .navbar-center {
+                display: none;
+            }
+        }
+
+        /* Form Panel */
+        .form-panel {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--bg-dark);
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 0.75rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-grid-full {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.2px;
+        }
+
+        .form-control {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #F9FAFB;
+            color: var(--text-main);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Demo Fill Scenarios */
+        .scenarios-container {
+            background-color: #F8FAFC;
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .scenarios-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .scenarios-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .scenario-pill {
+            background-color: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .scenario-pill:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.02);
+            transform: translateY(-1px);
+        }
+
+        .scenario-pill.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            background: var(--primary-gradient);
+            color: var(--text-white);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+            margin-top: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(30, 64, 175, 0.35);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Results Panel */
+        .results-panel {
+            background-color: var(--bg-dark);
+            border-radius: 16px;
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border-dark);
+            min-height: 500px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 3rem;
+            gap: 1.5rem;
+        }
+
+        .medical-cross-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--accent-blue);
+            animation: pulse-border 2s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(59, 130, 246, 0.2); box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); }
+            100% { border-color: rgba(59, 130, 246, 0.6); box-shadow: 0 0 30px rgba(59, 130, 246, 0.3); }
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            color: #94A3B8;
+            max-width: 450px;
+            line-height: 1.6;
+        }
+
+        /* Loading State */
+        .loading-state {
+            display: none; /* Controlled by JS */
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            box-shadow: var(--glow-blue);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-state p {
+            font-size: 1.1rem;
+            color: var(--text-white);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Report Display Container */
+        .report-container {
+            display: none; /* Controlled by JS */
+            flex: 1;
+            flex-direction: column;
+            animation: fade-in 0.5s ease-out forwards;
+            background-color: var(--bg-deep);
+        }
+
+        @keyframes fade-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Report Headers */
+        .report-header {
+            background-color: var(--bg-dark);
+            padding: 1.5rem 2rem;
+            border-bottom: 1.5px solid var(--border-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .report-title-area h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-white);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Risk Pill styling */
+        .risk-pill {
+            padding: 0.6rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: pulse-risk 2s infinite alternate;
+        }
+
+        .risk-low {
+            background-color: rgba(22, 163, 74, 0.15);
+            border: 1px solid var(--risk-low);
+            color: #4ADE80;
+        }
+
+        .risk-medium {
+            background-color: rgba(217, 119, 6, 0.15);
+            border: 1px solid var(--risk-medium);
+            color: #FBBF24;
+        }
+
+        .risk-high {
+            background-color: rgba(220, 38, 38, 0.15);
+            border: 1px solid var(--risk-high);
+            color: #F87171;
+        }
+
+        @keyframes pulse-risk {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        /* Content Body Layout */
+        .report-body {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+
+        /* Info Card Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-card {
+            background-color: var(--card-dark);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-dark);
+        }
+
+        .info-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.4rem;
+        }
+
+        .info-detail {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-detail span {
+            color: #94A3B8;
+            font-weight: 400;
+        }
+
+        /* ICD-10 Highlight Card */
+        .icd-card {
+            background: linear-gradient(135deg, #112A46 0%, #0F172A 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .badge-icd10 {
+            background-color: var(--accent-blue);
+            color: var(--text-white);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .icd-desc {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        .icd-alternatives {
+            font-size: 0.85rem;
+            color: #94A3B8;
+            margin-top: 0.25rem;
+        }
+
+        /* Coverage Section */
+        .coverage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+        }
+
+        .coverage-item {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-dark);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .coverage-label {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .coverage-val {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .coverage-val.highlight-yes {
+            color: #4ADE80;
+        }
+
+        .coverage-val.highlight-no {
+            color: #F87171;
+        }
+
+        /* Checklists & Lists */
+        .checklist-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border-dark);
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item.interactive-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateX(2px);
+        }
+
+        .checklist-icon {
+            color: #4ADE80;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            height: 24px;
+        }
+
+        .checklist-icon-bullet {
+            color: #FB923C;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            height: 24px;
+        }
+
+        .checklist-text {
+            font-size: 0.95rem;
+            color: #E2E8F0;
+        }
+
+        /* Recommendation Section */
+        .rec-card {
+            background-color: rgba(59, 130, 246, 0.08);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 12px 12px 0;
+            padding: 1.25rem;
+        }
+
+        .rec-text {
+            color: #E2E8F0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Toggle Button & Raw Code Area */
+        .raw-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-dark);
+            color: #94A3B8;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: fit-content;
+            margin-top: 1rem;
+            align-self: center;
+        }
+
+        .raw-toggle-btn:hover {
+            color: var(--text-white);
+            border-color: #475569;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .raw-report-area {
+            display: none; /* Toggle state */
+            background-color: #030712;
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #38BDF8;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--bg-dark);
+            color: #64748B;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-top: 1px solid var(--border-dark);
+            margin-top: auto;
+        }
+
+        .footer span {
+            color: #94A3B8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            🏥 <span>MediClaim AI</span>
+        </div>
+        <div class="navbar-center">
+            Pre-submission Claim Validator
+        </div>
+        <div class="navbar-badge">
+            Powered by Gemini AI + NLM ICD-10
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Left Side: Form Panel -->
+        <div class="form-panel">
+            <div>
+                <h3 class="section-title">Patient Information</h3>
+                
+                <!-- Demo scenarios trigger inside Form Panel for ease of testing -->
+                <div class="scenarios-container" style="margin-bottom: 1.5rem;">
+                    <div class="scenarios-title">Pre-fill Demo Scenarios</div>
+                    <div class="scenarios-grid">
+                        <button class="scenario-pill active" onclick="loadScenario('star_covered', this)">
+                            🌟 Star Health (Diabetes - Standard)
+                        </button>
+                        <button class="scenario-pill" onclick="loadScenario('knee_xray', this)">
+                            🛡️ HDFC Ergo (Knee pain + Chest X-ray)
+                        </button>
+                        <button class="scenario-pill" onclick="loadScenario('overbilled_ekg', this)">
+                            🏛️ PMJAY (Hypertension + Overbilled EKG)
+                        </button>
+                        <button class="scenario-pill" onclick="loadScenario('copd_freq', this)">
+                            💎 ManipalCigna (COPD Frequency Demo)
+                        </button>
+                        <button class="scenario-pill" onclick="loadScenario('suspicious_mismatch', this)" style="border-color: rgba(220, 38, 38, 0.4); color: #F87171; background-color: rgba(220, 38, 38, 0.03);">
+                            🚨 Suspicious Mismatch (Fraud Check)
+                        </button>
+                    </div>
+                </div>
+
+                <form id="claimForm" onsubmit="submitForm(event)">
+                    <div class="form-grid">
+                        <div class="form-group form-grid-full">
+                            <label for="name">Patient Name</label>
+                            <input type="text" id="name" class="form-control" placeholder="E.g. Rajesh Kumar" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" id="age" class="form-control" placeholder="E.g. 45" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" class="form-control" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-grid-full">
+                            <label for="discharge_summary">Discharge Summary Document (Paste Text)</label>
+                            <textarea id="discharge_summary" class="form-control" placeholder="Paste patient discharge summary here containing diagnosis, treatment details, hospital course, investigations, length of stay, and billed charges..." style="min-height: 220px;" required></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div>
+                <h3 class="section-title">Insurance Details</h3>
+                <div class="form-grid">
+                    <div class="form-group form-grid-full">
+                        <label for="hospital">Hospital Name</label>
+                        <input type="text" id="hospital" class="form-control" placeholder="E.g. Apollo Hospital, Chennai" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="insurer">Insurance Provider</label>
+                        <input type="text" id="insurer" class="form-control" placeholder="E.g. Star Health" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="policy_number">Policy Number</label>
+                        <input type="text" id="policy_number" class="form-control" placeholder="E.g. SH-10234" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" form="claimForm" id="submitBtn" class="btn-submit">
+                Validate Claim →
+            </button>
+        </div>
+
+        <!-- Right Side: Results Panel -->
+        <div class="results-panel" id="resultsPanel">
+            
+            <!-- Empty Placeholder -->
+            <div class="empty-state" id="emptyState">
+                <div class="medical-cross-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <h3>Submit a Claim to Begin Validation</h3>
+                <p>MediClaim AI will crosscheck diagnosis terminology with NLM ICD-10 registries, verify coverage limits, check Indian insurer policy terms, and flag rejection risk indicators in seconds.</p>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p>Validating claim with AI...</p>
+            </div>
+
+            <!-- Generated Validation Report Display -->
+            <div class="report-container" id="reportContainer">
+                <div class="report-header">
+                    <div class="report-title-area">
+                        <h3>📋 Validation Report</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                        <div id="riskBadge" class="risk-pill risk-low">
+                            LOW RISK
+                        </div>
+                        <div id="riskReductionNote" style="font-size: 0.75rem; color: #94A3B8; font-weight: 500;">
+                            Initial assessment
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-body">
+                    <!-- Medical Necessity Risk Engine Dashboard -->
+                    <div class="info-card" style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 1.5px solid rgba(96, 165, 250, 0.25); border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="font-size: 1.25rem;">⚖️</span>
+                                <span style="font-size: 0.9rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.75px;">Intelligent Claim Risk Engine</span>
+                            </div>
+                            <div id="triageBadge" style="padding: 0.4rem 1rem; border-radius: 9999px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px; text-transform: uppercase;">
+                                AUTO APPROVE
+                            </div>
+                        </div>
+                        
+                        <!-- Top Row: Risk Meter + Factor breakdown -->
+                        <div style="display: grid; grid-template-columns: 35% 65%; gap: 1.5rem; align-items: center;">
+                            <!-- Visual Risk Score Gauge -->
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                                <svg width="100" height="100" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                                    <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="transparent" />
+                                    <circle id="gaugeProgress" cx="50" cy="50" r="40" stroke="#10B981" stroke-width="8" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" style="transition: stroke-dashoffset 0.8s ease;" />
+                                </svg>
+                                <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <span id="compatibilityText" style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF;">0%</span>
+                                    <span style="font-size: 0.6rem; color: #94A3B8; font-weight: 600; text-transform: uppercase;">Risk Score</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Weighted Factor Bars -->
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <!-- Factor 1: Compatibility -->
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                        <span style="color: #E2E8F0; font-weight: 500;">1. Code Compatibility (45% wt)</span>
+                                        <span id="scoreCompatVal" style="color: #38BDF8; font-weight: 700;">0/100</span>
+                                    </div>
+                                    <div style="background-color: rgba(255,255,255,0.05); height: 5px; border-radius: 9999px; overflow: hidden;">
+                                        <div id="scoreCompatBar" style="background-color: #38BDF8; height: 100%; width: 0%; transition: width 0.6s ease;"></div>
+                                    </div>
+                                </div>
+                                <!-- Factor 2: Billing Anomaly -->
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                        <span style="color: #E2E8F0; font-weight: 500;">2. Billing Anomaly (30% wt)</span>
+                                        <span id="scoreBillingVal" style="color: #FB923C; font-weight: 700;">0/100</span>
+                                    </div>
+                                    <div style="background-color: rgba(255,255,255,0.05); height: 5px; border-radius: 9999px; overflow: hidden;">
+                                        <div id="scoreBillingBar" style="background-color: #FB923C; height: 100%; width: 0%; transition: width 0.6s ease;"></div>
+                                    </div>
+                                </div>
+                                <!-- Factor 3: Frequency Pattern -->
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                        <span style="color: #E2E8F0; font-weight: 500;">3. Frequency Pattern (25% wt)</span>
+                                        <span id="scoreFreqVal" style="color: #A78BFA; font-weight: 700;">0/100</span>
+                                    </div>
+                                    <div style="background-color: rgba(255,255,255,0.05); height: 5px; border-radius: 9999px; overflow: hidden;">
+                                        <div id="scoreFreqBar" style="background-color: #A78BFA; height: 100%; width: 0%; transition: width 0.6s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Engine Flags / Rationale Reasons block -->
+                        <div id="engineReasonsCard" style="background-color: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.08); padding: 0.85rem; border-radius: 8px; display: none;">
+                            <div style="font-size: 0.7rem; color: #F87171; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 0.35rem;">Engine Flags & Warnings</div>
+                            <div id="engineReasonsList" style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; display: flex; flex-direction: column; gap: 0.25rem;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Patient & Policy Details summary cards -->
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-card-title">👤 Patient Details</div>
+                            <div class="info-detail" id="rptPatientName">Rajesh Kumar, 45M</div>
+                            <div class="info-detail"><span>Diagnosis:</span> <span id="rptDiagnosis" style="color: var(--text-white);">Diabetes Type 2</span></div>
+                            <div class="info-detail"><span>Treatment:</span> <span id="rptTreatment" style="color: var(--text-white);">Insulin therapy</span></div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-card-title">🏨 Hospital & Insurer</div>
+                            <div class="info-detail" id="rptHospital">Apollo Hospital</div>
+                            <div class="info-detail"><span>Insurer:</span> <span id="rptInsurer" style="color: var(--text-white);">Star Health</span></div>
+                            <div class="info-detail"><span>Policy #:</span> <span id="rptPolicyNum" style="color: var(--text-white);">SH-10234</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted best ICD code -->
+                    <div class="icd-card">
+                        <div class="info-card-title">🔢 ICD-10 Registry Verification</div>
+                        <div>
+                            <span class="badge-icd10" id="rptIcdCode">E11.9</span>
+                        </div>
+                        <div class="icd-desc" id="rptIcdDesc">Type 2 diabetes mellitus without complications</div>
+                        <div class="icd-alternatives" id="rptIcdAlternatives">Alternatives: E11.65 (Hyperglycemia)</div>
+                    </div>
+
+                    <!-- Coverage Check stats -->
+                    <div class="info-card">
+                        <div class="info-card-title">✅ Policy Coverage Match</div>
+                        <div class="coverage-grid">
+                            <div class="coverage-item">
+                                <div class="coverage-label">Condition Covered</div>
+                                <div class="coverage-val highlight-yes" id="rptCovered">YES</div>
+                            </div>
+                            <div class="coverage-item">
+                                <div class="coverage-label">Sum Insured</div>
+                                <div class="coverage-val" id="rptSumInsured">₹5,00,000</div>
+                            </div>
+                            <div class="coverage-item">
+                                <div class="coverage-label">Billed Amount</div>
+                                <div class="coverage-val" id="rptBilledAmount">N/A</div>
+                            </div>
+                            <div class="coverage-item">
+                                <div class="coverage-label">Days Admitted</div>
+                                <div class="coverage-val" id="rptDays">4 Days</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Required -->
+                    <div class="info-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div class="info-card-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0; font-size: 0.85rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.5rem;">📋 Required Checklists</div>
+                            <span id="completenessBadge" style="font-size: 0.75rem; background-color: rgba(59, 130, 246, 0.15); color: #93C5FD; border: 1px solid rgba(59, 130, 246, 0.3); padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600;">0% Complete</span>
+                        </div>
+                        <div style="background-color: rgba(255, 255, 255, 0.05); height: 6px; border-radius: 9999px; margin-bottom: 1.25rem; overflow: hidden; border: 1px solid var(--border-dark);">
+                            <div id="completenessProgress" style="background: linear-gradient(90deg, #3B82F6, #10B981); height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+                        </div>
+                        <div class="checklist-container" id="rptDocuments">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Potential Issues Gaps -->
+                    <div class="info-card" id="issuesCardSection">
+                        <div class="info-card-title" style="color: #F87171;">⚠️ Potential Flags</div>
+                        <div class="checklist-container" id="rptIssues">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Recommendations Action -->
+                    <div class="info-card">
+                        <div class="info-card-title">💡 Actionable Billing Recommendation</div>
+                        <div class="rec-card">
+                            <div class="rec-text" id="rptRecommendation">
+                                Ensure all laboratory blood glucose reports are attached before submission.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable raw audit report -->
+                    <button class="raw-toggle-btn" onclick="toggleRawReport()">Toggle Raw Report Text</button>
+                    <div class="raw-report-area" id="rawReportText">
+                        RAW REPORT
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        Built for Indian Healthcare | <span>PMJAY · Star Health · HDFC Ergo · New India Assurance · ManipalCigna · IRDAI Guidelines</span>
+    </footer>
+
+    <script>
+        // Mocks datasets
+        const scenarios = {
+            star_covered: {
+                name: "Rajesh Kumar",
+                age: 45,
+                gender: "Male",
+                hospital: "Apollo Hospital, Chennai",
+                insurer: "Star Health",
+                policy_number: "SH-10234",
+                discharge_summary: `PATIENT DISCHARGE SUMMARY
+-------------------------
+Patient Name: Rajesh Kumar | Age: 45 | Gender: Male
+Admission Date: 2026-06-15 | Discharge Date: 2026-06-16 (Length of Stay: 1 Day)
+Hospital: Apollo Hospital, Chennai
+    
+CHIEF COMPLAINT:
+Routine quarterly follow-up for evaluation of glycated hemoglobin and blood glucose control.
+    
+PAST MEDICAL HISTORY:
+Type 2 Diabetes Mellitus diagnosed 5 years ago, managed with oral hypoglycemics (Metformin 500mg BID). No history of cardiovascular or renal complications.
+    
+HOSPITAL COURSE & TREATMENT:
+Patient admitted for standard outpatient diagnostic evaluation. Vital signs monitored and stable. Routine laboratory panel drawn. Standard consult completed.
+    
+INVESTIGATIONS PERFORMED:
+1. Glycated Hemoglobin (HbA1c) Test: Result 7.2% (stable control).
+2. Comprehensive Metabolic Panel (CMP).
+    
+DISCHARGE CONDITION & PLAN:
+Discharged in stable clinical state. Continue current dosage of Metformin. Daily self-monitoring of blood glucose. Follow up in 3 months.
+    
+TOTAL BILLED AMOUNT: ₹12,500.00`
+            },
+            knee_xray: {
+                name: "Anjali Sharma",
+                age: 28,
+                gender: "Female",
+                hospital: "Fortis Hospital, Delhi",
+                insurer: "HDFC Ergo",
+                policy_number: "HD-45612",
+                discharge_summary: `PATIENT DISCHARGE SUMMARY
+-------------------------
+Patient Name: Anjali Sharma | Age: 28 | Gender: Female
+Admission Date: 2026-06-18 | Discharge Date: 2026-06-19 (Length of Stay: 1 Day)
+Hospital: Fortis Hospital, Delhi
+    
+CHIEF COMPLAINT:
+Patient presents with localized pain, stiffness, and joint soreness in the right knee following a mild twisting injury during walking.
+    
+HOSPITAL COURSE & TREATMENT:
+Admitted for diagnostic imaging and orthopedic evaluation. Conservative rest and icing protocol initiated.
+    
+INVESTIGATIONS PERFORMED:
+1. Standard Chest X-Ray (1-view, AP) performed to rule out pulmonary anomalies. (Note: No knee imaging or X-ray was ordered or completed during this admission).
+    
+DISCHARGE CONDITION & PLAN:
+Discharged home in stable condition. Advised knee brace support, rest, and ibuprofen for joint inflammation. Follow up with orthopedic clinic.
+    
+TOTAL BILLED AMOUNT: ₹8,000.00`
+            },
+            overbilled_ekg: {
+                name: "Ramesh Sawant",
+                age: 52,
+                gender: "Male",
+                hospital: "KEM Government Hospital, Mumbai",
+                insurer: "PMJAY",
+                policy_number: "PM-98765",
+                discharge_summary: `PATIENT DISCHARGE SUMMARY
+-------------------------
+Patient Name: Ramesh Sawant | Age: 52 | Gender: Male
+Admission Date: 2026-06-10 | Discharge Date: 2026-06-11 (Length of Stay: 1 Day)
+Hospital: KEM Government Hospital, Mumbai
+    
+CHIEF COMPLAINT:
+Patient admitted for routine management and assessment of essential hypertension.
+    
+PAST MEDICAL HISTORY:
+Hypertension for 3 years, managed with Amlodipine 5mg.
+    
+HOSPITAL COURSE & CLINICAL COURSE:
+Patient observed for 24 hours. Blood pressure readings stabilized at 130/85 mmHg.
+    
+INVESTIGATIONS PERFORMED:
+1. Routine Electrocardiogram (EKG/ECG) tracing, 12-lead, completed to evaluate cardiac baseline.
+    
+DISCHARGE PLAN:
+Continue Amlodipine 5mg daily. Low sodium diet.
+    
+TOTAL BILLED AMOUNT: ₹50,000.00 (Standard EKG package fee)`
+            },
+            copd_freq: {
+                name: "Vikram Malhotra",
+                age: 63,
+                gender: "Male",
+                hospital: "Medanta - The Medicity, Gurugram",
+                insurer: "ManipalCigna",
+                policy_number: "MA-77654",
+                discharge_summary: `PATIENT DISCHARGE SUMMARY
+-------------------------
+Patient Name: Vikram Malhotra | Age: 63 | Gender: Male
+Admission Date: 2026-06-20 | Discharge Date: 2026-06-21 (Length of Stay: 1 Day)
+Hospital: Medanta - The Medicity, Gurugram
+    
+CHIEF COMPLAINT:
+Patient admitted with mild shortness of breath and wheezing associated with chronic obstructive pulmonary disease (COPD) exacerbation.
+    
+INVESTIGATIONS & COURSE:
+Nebulization therapy administered. Oxygen saturation monitored at 96% on room air. Standard chest consultation completed.
+    
+TOTAL BILLED AMOUNT: ₹15,000.00`
+            },
+            suspicious_mismatch: {
+                name: "Sunil Verma",
+                age: 50,
+                gender: "Male",
+                hospital: "Apollo Hospital, Chennai",
+                insurer: "Star Health",
+                policy_number: "SH-10234",
+                discharge_summary: `PATIENT DISCHARGE SUMMARY
+-------------------------
+Patient Name: Sunil Verma | Age: 50 | Gender: Male
+Admission Date: 2026-06-12 | Discharge Date: 2026-06-15 (Length of Stay: 3 Days)
+Hospital: Apollo Hospital, Chennai
+    
+CHIEF COMPLAINT:
+Patient admitted with routine symptoms of Type 2 Diabetes Mellitus, reporting high home blood glucose readings (210 mg/dL).
+    
+HOSPITAL COURSE & PROCEDURE:
+Patient scheduled and underwent emergency laparoscopic appendectomy under general anesthesia. Surgical resection of inflamed appendix completed without complication.
+    
+DISCHARGE PLAN:
+Post-operative care, wound monitoring, insulin dosage titration.
+    
+TOTAL BILLED AMOUNT: ₹30,000.00`
+            }
+        };
+
+        // Load Scenario data into Form
+        function loadScenario(key, btnElement) {
+            // Remove active class from all pills
+            document.querySelectorAll('.scenario-pill').forEach(pill => pill.classList.remove('active'));
+            // Add active class to clicked pill
+            if(btnElement) btnElement.classList.add('active');
+            
+            const data = scenarios[key];
+            if (!data) return;
+
+            document.getElementById('name').value = data.name;
+            document.getElementById('age').value = data.age;
+            document.getElementById('gender').value = data.gender;
+            document.getElementById('discharge_summary').value = data.discharge_summary;
+            document.getElementById('hospital').value = data.hospital;
+            document.getElementById('insurer').value = data.insurer;
+            document.getElementById('policy_number').value = data.policy_number;
+        }
+
+        // Initialize with first scenario
+        window.addEventListener('DOMContentLoaded', () => {
+            loadScenario('star_covered', document.querySelector('.scenario-pill'));
+        });
+
+        // Toggle Raw Report Visual Area
+        function toggleRawReport() {
+            const rawEl = document.getElementById('rawReportText');
+            if (rawEl.style.display === 'block') {
+                rawEl.style.display = 'none';
+            } else {
+                rawEl.style.display = 'block';
+            }
+        }
+
+        // Form Submit handler
+        async function submitForm(event) {
+            event.preventDefault();
+
+            // DOM Elements
+            const submitBtn = document.getElementById('submitBtn');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+            const reportContainer = document.getElementById('reportContainer');
+
+            // Set loading state
+            submitBtn.disabled = true;
+            emptyState.style.display = 'none';
+            reportContainer.style.display = 'none';
+            loadingState.style.display = 'flex';
+
+            // Gather inputs
+            const payload = {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                discharge_summary: document.getElementById('discharge_summary').value,
+                hospital: document.getElementById('hospital').value,
+                insurer: document.getElementById('insurer').value,
+                policy_number: document.getElementById('policy_number').value
+            };
+
+            try {
+                const response = await fetch('/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || `Server responded with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                renderReport(result, payload);
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                // Revert UI to empty placeholder
+                emptyState.style.display = 'flex';
+                reportContainer.style.display = 'none';
+            } finally {
+                // Revert Loading State
+                submitBtn.disabled = false;
+                loadingState.style.display = 'none';
+            }
+        }
+
+        // Parse and Render Gemini's Claim Report
+        function renderReport(result, payload) {
+            const reportText = result.report;
+            const riskLevel = result.risk_level;
+            
+            // 0. Render Medical Necessity Dashboard
+            const finalScore = result.final_score !== undefined ? parseFloat(result.final_score) : 0.0;
+            const compatScore = result.compatibility_score !== undefined ? parseFloat(result.compatibility_score) : 0.0;
+            const billingScore = result.billing_score !== undefined ? parseFloat(result.billing_score) : 0.0;
+            const freqScore = result.frequency_score !== undefined ? parseFloat(result.frequency_score) : 0.0;
+            
+            const triageDecision = result.triage_decision || "Send for Review";
+            const reasons = result.reasons || [];
+            
+            // Set text values
+            document.getElementById('compatibilityText').textContent = `${Math.round(finalScore)}%`;
+            
+            // Factor 1: Compatibility
+            document.getElementById('scoreCompatVal').textContent = `${Math.round(compatScore)}/100`;
+            document.getElementById('scoreCompatBar').style.width = `${compatScore}%`;
+            
+            // Factor 2: Billing
+            document.getElementById('scoreBillingVal').textContent = `${Math.round(billingScore)}/100`;
+            document.getElementById('scoreBillingBar').style.width = `${billingScore}%`;
+            
+            // Factor 3: Frequency
+            document.getElementById('scoreFreqVal').textContent = `${Math.round(freqScore)}/100`;
+            document.getElementById('scoreFreqBar').style.width = `${freqScore}%`;
+            
+            // SVG circular progress calculation (Final Risk Score)
+            const circumference = 251.2;
+            const offset = circumference - (finalScore / 100.0 * circumference);
+            const progressCircle = document.getElementById('gaugeProgress');
+            progressCircle.style.strokeDashoffset = offset;
+            
+            // Triage Badge styling and gauge colors
+            const triageBadge = document.getElementById('triageBadge');
+            triageBadge.textContent = triageDecision;
+            
+            if (triageDecision.toLowerCase().includes('approve') || triageDecision.toLowerCase().includes('settle')) {
+                progressCircle.setAttribute('stroke', '#10B981'); // Green
+                triageBadge.style.backgroundColor = 'rgba(16, 185, 129, 0.15)';
+                triageBadge.style.color = '#34D399';
+                triageBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            } else if (triageDecision.toLowerCase().includes('review')) {
+                progressCircle.setAttribute('stroke', '#F59E0B'); // Orange/Amber
+                triageBadge.style.backgroundColor = 'rgba(245, 158, 11, 0.15)';
+                triageBadge.style.color = '#FBBF24';
+                triageBadge.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+            } else {
+                progressCircle.setAttribute('stroke', '#EF4444'); // Red
+                triageBadge.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                triageBadge.style.color = '#F87171';
+                triageBadge.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            }
+            
+            // Engine flags reasons card
+            const reasonsCard = document.getElementById('engineReasonsCard');
+            const reasonsList = document.getElementById('engineReasonsList');
+            reasonsList.innerHTML = '';
+            
+            if (reasons && reasons.length > 0) {
+                reasonsCard.style.display = 'block';
+                reasons.forEach(reason => {
+                    reasonsList.innerHTML += `<div>• ${reason}</div>`;
+                });
+            } else {
+                reasonsCard.style.display = 'none';
+            }
+
+            // 1. Render Risk Badge
+            const riskBadge = document.getElementById('riskBadge');
+            riskBadge.textContent = `${riskLevel} RISK`;
+            riskBadge.className = 'risk-pill'; // Reset classes
+            
+            if (riskLevel === 'LOW') {
+                riskBadge.classList.add('risk-low');
+            } else if (riskLevel === 'MEDIUM') {
+                riskBadge.classList.add('risk-medium');
+            } else {
+                riskBadge.classList.add('risk-high');
+            }
+
+            // 2. Render Basic Summaries
+            document.getElementById('rptPatientName').textContent = `${payload.name}, ${payload.age} (${payload.gender[0]})`;
+            document.getElementById('rptDiagnosis').textContent = result.diagnosis || 'N/A';
+            document.getElementById('rptTreatment').textContent = result.treatment || 'N/A';
+            document.getElementById('rptHospital').textContent = payload.hospital;
+            document.getElementById('rptInsurer').textContent = payload.insurer;
+            document.getElementById('rptPolicyNum').textContent = payload.policy_number;
+
+            // 3. Render ICD Codes
+            document.getElementById('rptIcdCode').textContent = result.icd10_code || 'N/A';
+            document.getElementById('rptIcdDesc').textContent = result.icd10_desc || 'Registry lookup unresolvable';
+            
+            // Extract alternatives from report if possible
+            const altMatch = reportText.match(/Alternatives:\s*(.*)/i);
+            if (altMatch && altMatch[1]) {
+                document.getElementById('rptIcdAlternatives').textContent = `Alternatives: ${altMatch[1].trim()}`;
+            } else {
+                document.getElementById('rptIcdAlternatives').textContent = 'Alternatives: None identified';
+            }
+
+            // 4. Parse Coverage Grid Values
+            // Parse Covered (YES/NO)
+            const coveredMatch = reportText.match(/Condition covered:\s*(YES|NO)/i);
+            const coveredVal = coveredMatch ? coveredMatch[1].toUpperCase() : 'UNKNOWN';
+            const coveredEl = document.getElementById('rptCovered');
+            coveredEl.textContent = coveredVal;
+            coveredEl.className = 'coverage-val';
+            if (coveredVal === 'YES') {
+                coveredEl.classList.add('highlight-yes');
+            } else {
+                coveredEl.classList.add('highlight-no');
+            }
+
+            // Parse Sum Insured
+            const sumMatch = reportText.match(/Sum insured:\s*(₹?[\d,]+|Unknown)/i);
+            document.getElementById('rptSumInsured').textContent = sumMatch ? formatRupees(sumMatch[1].trim()) : 'N/A';
+
+            // Set Billed Amount
+            if (result.billed_amount !== undefined) {
+                document.getElementById('rptBilledAmount').textContent = formatRupees(result.billed_amount);
+            } else {
+                document.getElementById('rptBilledAmount').textContent = 'N/A';
+            }
+
+            // Parse Days Admitted
+            document.getElementById('rptDays').textContent = result.days_admitted !== undefined ? `${result.days_admitted} Days` : 'N/A';
+
+            // 5. Parse Required Documents List
+            // Find content between "DOCUMENTS REQUIRED:" and "POTENTIAL ISSUES:"
+            const docsSection = extractSection(reportText, 'DOCUMENTS REQUIRED:', 'POTENTIAL ISSUES:');
+            const docLines = parseBulletPoints(docsSection);
+            const docsContainer = document.getElementById('rptDocuments');
+            docsContainer.innerHTML = '';
+            
+            // Set global state for recalculation
+            window.initialRiskLevel = riskLevel;
+            window.totalDocsCount = docLines.length;
+            
+            if (docLines.length > 0) {
+                docLines.forEach((doc, idx) => {
+                    docsContainer.innerHTML += `
+                        <div class="checklist-item interactive-item" id="doc-item-${idx}">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; width: 100%; cursor: pointer; position: relative; margin: 0; user-select: none;">
+                                <input type="checkbox" id="checkbox-${idx}" class="doc-checkbox" onchange="toggleDocument(${idx})" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10B981; margin: 0;">
+                                <span class="checklist-text" id="doc-text-${idx}">${doc}</span>
+                                
+                                <div class="upload-trigger-container" style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;" onclick="event.stopPropagation();">
+                                    <div id="spinner-${idx}" style="display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: #3B82F6; border-radius: 50%; animation: spin 0.8s infinite linear;"></div>
+                                    <span id="attached-badge-${idx}" class="attached-badge" style="display: none; font-size: 0.7rem; background-color: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 600;">Uploaded</span>
+                                    <button type="button" id="upload-btn-${idx}" onclick="simulateFileUpload(${idx})" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                        Upload
+                                    </button>
+                                </div>
+                            </label>
+                        </div>
+                    `;
+                });
+            } else {
+                docsContainer.innerHTML = '<div class="checklist-text">Standard discharge documentation required.</div>';
+                window.totalDocsCount = 1; // prevent division by zero
+            }
+
+            // 6. Parse Potential Issues
+            const issuesSection = extractSection(reportText, 'POTENTIAL ISSUES:', 'REJECTION RISK:');
+            const issueLines = parseBulletPoints(issuesSection);
+            const issuesContainer = document.getElementById('rptIssues');
+            const issuesCardSection = document.getElementById('issuesCardSection');
+            issuesContainer.innerHTML = '';
+            
+            if (issueLines.length > 0 && !issueLines[0].toLowerCase().includes('none')) {
+                issuesCardSection.style.display = 'block';
+                issueLines.forEach(issue => {
+                    issuesContainer.innerHTML += `
+                        <div class="checklist-item" style="border-color: rgba(220, 38, 38, 0.2)">
+                            <span class="checklist-icon-bullet">⚠</span>
+                            <span class="checklist-text" style="color: #FCA5A5;">${issue}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                // If no issues, hide or show friendly message
+                issuesCardSection.style.display = 'none';
+            }
+
+            // 7. Parse Recommendation
+            const recSection = extractSection(reportText, 'RECOMMENDATION:', 'Context:');
+            const recommendation = recSection ? recSection.trim() : 'Review patient discharge summary before submission.';
+            document.getElementById('rptRecommendation').textContent = recommendation;
+
+            // 8. Put Raw Text
+            document.getElementById('rawReportText').textContent = reportText;
+            document.getElementById('rawReportText').style.display = 'none'; // Keep closed initially
+
+            // Initialize dynamic risk recalculation
+            recalculateRisk();
+
+            // Display Report Container
+            document.getElementById('reportContainer').style.display = 'flex';
+        }
+
+        // Helper string parser utilities
+        function extractSection(text, startKeyword, endKeyword) {
+            const startIdx = text.indexOf(startKeyword);
+            if (startIdx === -1) return '';
+            
+            const startOffset = startIdx + startKeyword.length;
+            const endIdx = text.indexOf(endKeyword, startOffset);
+            
+            if (endIdx === -1) {
+                return text.substring(startOffset);
+            }
+            return text.substring(startOffset, endIdx);
+        }
+
+        function parseBulletPoints(textSection) {
+            if (!textSection) return [];
+            return textSection
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.startsWith('-') || line.startsWith('*'))
+                .map(line => line.replace(/^[\-\*\s]+/, '').trim())
+                .filter(line => line.length > 0);
+        }
+
+        function formatRupees(value) {
+            if (value === null || value === undefined || value === 'N/A' || value === 'Unknown') return 'N/A';
+            let str = value.toString().replace(/[₹$,\s]/g, '');
+            let num = parseFloat(str);
+            if (isNaN(num)) return value;
+            let formatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            return formatter.format(num);
+        }
+
+        function toggleDocument(idx) {
+            const checkbox = document.getElementById(`checkbox-${idx}`);
+            const badge = document.getElementById(`attached-badge-${idx}`);
+            const uploadBtn = document.getElementById(`upload-btn-${idx}`);
+            const itemContainer = document.getElementById(`doc-item-${idx}`);
+            
+            if (checkbox.checked) {
+                badge.style.display = 'inline-block';
+                uploadBtn.style.display = 'none';
+                itemContainer.style.backgroundColor = 'rgba(16, 185, 129, 0.04)';
+                itemContainer.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            } else {
+                badge.style.display = 'none';
+                uploadBtn.style.display = 'inline-block';
+                itemContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+                itemContainer.style.borderColor = 'var(--border-dark)';
+            }
+            recalculateRisk();
+        }
+
+        function simulateFileUpload(idx) {
+            const checkbox = document.getElementById(`checkbox-${idx}`);
+            const badge = document.getElementById(`attached-badge-${idx}`);
+            const uploadBtn = document.getElementById(`upload-btn-${idx}`);
+            const spinner = document.getElementById(`spinner-${idx}`);
+            const itemContainer = document.getElementById(`doc-item-${idx}`);
+            
+            // Disable interactions during upload
+            checkbox.disabled = true;
+            uploadBtn.disabled = true;
+            uploadBtn.style.opacity = '0.5';
+            uploadBtn.textContent = 'Uploading...';
+            spinner.style.display = 'inline-block';
+            
+            setTimeout(() => {
+                // Done uploading
+                checkbox.checked = true;
+                checkbox.disabled = false;
+                
+                spinner.style.display = 'none';
+                uploadBtn.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.style.opacity = '1';
+                uploadBtn.textContent = 'Upload';
+                
+                badge.style.display = 'inline-block';
+                itemContainer.style.backgroundColor = 'rgba(16, 185, 129, 0.04)';
+                itemContainer.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                
+                recalculateRisk();
+            }, 1200);
+        }
+
+        function recalculateRisk() {
+            const checkedCount = document.querySelectorAll('.doc-checkbox:checked').length;
+            const totalCount = window.totalDocsCount || 1;
+            const percent = Math.round((checkedCount / totalCount) * 100);
+            
+            // Update progress UI
+            document.getElementById('completenessProgress').style.width = `${percent}%`;
+            document.getElementById('completenessBadge').textContent = `${percent}% Complete`;
+            
+            // Adjust risk level
+            let initialRisk = window.initialRiskLevel || 'HIGH';
+            let newRisk = initialRisk;
+            
+            if (initialRisk === 'HIGH') {
+                if (percent === 100) {
+                    newRisk = 'LOW';
+                } else if (percent >= 50) {
+                    newRisk = 'MEDIUM';
+                } else {
+                    newRisk = 'HIGH';
+                }
+            } else if (initialRisk === 'MEDIUM') {
+                if (percent >= 50) {
+                    newRisk = 'LOW';
+                } else {
+                    newRisk = 'MEDIUM';
+                }
+            } else {
+                newRisk = 'LOW';
+            }
+            
+            // Update Risk Badge
+            const riskBadge = document.getElementById('riskBadge');
+            if (riskBadge) {
+                riskBadge.textContent = `${newRisk} RISK`;
+                riskBadge.className = 'risk-pill';
+                
+                if (newRisk === 'LOW') {
+                    riskBadge.classList.add('risk-low');
+                } else if (newRisk === 'MEDIUM') {
+                    riskBadge.classList.add('risk-medium');
+                } else {
+                    riskBadge.classList.add('risk-high');
+                }
+            }
+            
+            // Update explanation text
+            const noteEl = document.getElementById('riskReductionNote');
+            if (noteEl) {
+                if (percent === 0) {
+                    noteEl.textContent = 'Initial assessment (0 docs attached)';
+                    noteEl.style.color = '#94A3B8';
+                } else if (percent === 100) {
+                    noteEl.textContent = `Risk reduced to ${newRisk} (All docs attached)`;
+                    noteEl.style.color = '#34D399';
+                } else {
+                    noteEl.textContent = `Risk adjusted (attached ${checkedCount}/${totalCount} docs)`;
+                    noteEl.style.color = '#60A5FA';
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>
