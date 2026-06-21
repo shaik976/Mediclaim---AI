@@ -10,11 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0A1628;
+            --bg-dark: #0A1526;
             --bg-deep: #050B14;
             --bg-light: #F3F4F6;
             --card-bg: #FFFFFF;
-            --card-dark: #12213A;
+            --card-dark: #0F1A2F;
             --primary-gradient: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
             --accent-blue: #3B82F6;
             --accent-sky: #0EA5E9;
@@ -39,8 +39,8 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
+            background-color: var(--bg-deep);
+            color: var(--text-light);
             line-height: 1.5;
             min-height: 100vh;
             display: flex;
@@ -139,11 +139,11 @@
 
         /* Form Panel */
         .form-panel {
-            background-color: var(--card-bg);
+            background-color: var(--card-dark);
             border-radius: 16px;
             padding: 2rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-dark);
             display: flex;
             flex-direction: column;
             gap: 1.75rem;
@@ -152,7 +152,7 @@
         .section-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--bg-dark);
+            color: var(--text-white);
             border-left: 4px solid var(--accent-blue);
             padding-left: 0.75rem;
             margin-bottom: 1rem;
@@ -175,42 +175,59 @@
             display: flex;
             flex-direction: column;
             gap: 0.35rem;
+            width: 100%;
         }
 
         .form-group label {
             font-size: 0.85rem;
             font-weight: 600;
-            color: var(--text-muted);
+            color: #94A3B8;
             letter-spacing: 0.2px;
         }
 
         .form-control {
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
+            width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-dark);
             border-radius: 8px;
-            background-color: #F9FAFB;
-            color: var(--text-main);
+            background-color: #0A1628;
+            color: var(--text-white);
             transition: all var(--transition-speed) ease;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--accent-blue);
-            background-color: #FFFFFF;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            background-color: #0E1E36;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25rem;
+            appearance: none;
+            padding-right: 2.5rem;
+        }
+
+        select.form-control option {
+            background-color: #0A1628;
+            color: var(--text-white);
         }
 
         textarea.form-control {
             resize: vertical;
             min-height: 80px;
+            width: 100%;
         }
 
         /* Demo Fill Scenarios */
         .scenarios-container {
-            background-color: #F8FAFC;
-            border: 1px dashed var(--border-color);
+            background-color: #0A1628;
+            border: 1px dashed var(--border-dark);
             border-radius: 12px;
             padding: 1rem;
         }
@@ -218,7 +235,7 @@
         .scenarios-title {
             font-size: 0.8rem;
             font-weight: 700;
-            color: var(--text-muted);
+            color: #94A3B8;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 0.75rem;
@@ -231,12 +248,13 @@
         }
 
         .scenario-pill {
-            background-color: #FFFFFF;
-            border: 1px solid var(--border-color);
+            background-color: #12213A;
+            border: 1px solid var(--border-dark);
             border-radius: 8px;
             padding: 0.4rem 0.75rem;
             font-size: 0.75rem;
             font-weight: 500;
+            color: #94A3B8;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
@@ -246,15 +264,15 @@
 
         .scenario-pill:hover {
             border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            background-color: rgba(59, 130, 246, 0.02);
+            color: #38BDF8;
+            background-color: rgba(59, 130, 246, 0.05);
             transform: translateY(-1px);
         }
 
         .scenario-pill.active {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: rgba(59, 130, 246, 0.15);
             border-color: var(--accent-blue);
-            color: var(--accent-blue);
+            color: #38BDF8;
             font-weight: 600;
         }
 
@@ -296,7 +314,7 @@
 
         /* Results Panel */
         .results-panel {
-            background-color: var(--bg-dark);
+            background-color: var(--card-dark);
             border-radius: 16px;
             color: var(--text-light);
             display: flex;
